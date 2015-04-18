@@ -18,7 +18,10 @@
 #define RED 'r'
 #define BLACK 'b'
 #define MAX 1000
-#define HEIGHT 5
+#define HEIGHT 6.0
+#define DELTA 4.5
+#define RADIUS 4
+#define LABEL_SIZE 7
 
 struct node{
   char color;
@@ -41,7 +44,7 @@ void _rbt_left_rotate(rbt*,node*);
 void _rbt_right_rotate(rbt*,node*);
 void _rbt_transplant(rbt*,node*,node*);
 void rbt_printf(rbt*,node*,int);
-void rbt_plot(rbt*,node*,FILE*,FILE*,FILE*,int,int,int);
+float rbt_plot(rbt*,node*,FILE*,FILE*,FILE*,float,float);
 void rbt_gnuplot(rbt*);
 
 node* rbt_node(rbt *T,node *p,int key){
@@ -227,9 +230,10 @@ int main(int argc,char *argv[]){
     v = rand() % MAX;
     printf("Inserta %d\n",v);
     rbt_insert(T,v);
+    rbt_gnuplot(T);
+    sleep(1);
   }
-  //rbt_gnuplot(T);
-
+  return 0;
   for(i = 0;i < N;i++){
     v = rand() % MAX;
     printf("Busca %d\t",v);
@@ -438,7 +442,7 @@ void rbt_gnuplot(rbt *T){
   red_nodes = fopen("nodos_rojos.dat","w");
   edges = fopen("aristas.dat","w");
 
-  rbt_plot(T,T->root,black_nodes,red_nodes,edges,-HEIGHT*T->elements,HEIGHT*T->elements,0);
+  rbt_plot(T,T->root,black_nodes,red_nodes,edges,0.0,0.0);
   fclose(black_nodes);
   fclose(red_nodes);
   fclose(edges);
@@ -453,33 +457,37 @@ void rbt_gnuplot(rbt *T){
   fprintf(gnuPipe,"unset ztics\n");
   fprintf(gnuPipe,"set style fill transparent solid 1.0\n");
   fprintf(gnuPipe,"lab(String,Size) = sprintf(\"{/=%d %s}\", Scale(Size), String)\n");
+  fprintf(gnuPipe,"NodeName(String,Size) = sprintf(\"{/=\%d \%s}\", Size, String)\n");
   fprintf(gnuPipe,"plot ");
-  fprintf(gnuPipe,"'aristas.dat' using 1:2:3:4 with vectors filled heads linecolor rgb \"dark-blue\"");
-  fprintf(gnuPipe,", 'nodos_negros.dat' using 1:2:(50) with circles lc rgb \"black\"");
+  fprintf(gnuPipe,"'aristas.dat' using 1:2:3:4 with vectors filled nohead linecolor rgb \"dark-blue\"");
+  fprintf(gnuPipe,", 'nodos_negros.dat' using 1:2:(%d) with circles lc rgb \"black\"",RADIUS);
   fprintf(gnuPipe,", 'nodos_negros.dat' using 1:2:3 with labels textcolor rgb \"white\"");
- fprintf(gnuPipe,", 'nodos_rojos.dat' using 1:2:(50) with circles lc rgb \"red\"");
-  fprintf(gnuPipe,", 'nodos_rojos.dat' using 1:2:3 with labels textcolor rgb \"black\"");
+  fprintf(gnuPipe,", 'nodos_rojos.dat' using 1:2:(%d) with circles lc rgb \"red\"",RADIUS);
+  fprintf(gnuPipe,", 'nodos_rojos.dat' using 1:2:3 with labels textcolor rgb \"black\"",LABEL_SIZE);
   fprintf(gnuPipe,"\n");
- 
+  pclose(gnuPipe);
 
 }
 
-void rbt_plot(rbt *T,node *n,FILE *black_nodes,FILE *red_nodes,FILE *edges,int min,int max,int ybase){
-  int x,y;
-  int xmin,xmax,ymin;
+float rbt_plot(rbt *T,node *n,FILE *black_nodes,FILE *red_nodes,FILE *edges,float xo,float y){
+  float x,xf = xo;
+  FILE *nodes;
   if(n == T->nil) return;
-  x = (min + max) / 2;
-  y = ybase - HEIGHT;
-  if (n->color == BLACK)
-    fprintf(black_nodes,"%d %d %d\n",x,y,n->key);
-  else 
-    fprintf(red_nodes,"%d %d %d\n",x,y,n->key);
-  if (n->left != T->nil){
-    fprintf(edges,"%d %d %d %d\n",x,y,(min + x)/2-x,-HEIGHT);
-    rbt_plot(T,n->left,black_nodes,red_nodes,edges,min,x,ybase - HEIGHT);
-  }
-  if (n->right != T->nil){
-    fprintf(edges,"%d %d %d %d\n",x,y,(max + x)/2-x,-HEIGHT);
-    rbt_plot(T,n->right,black_nodes,red_nodes,edges,x,max,ybase - HEIGHT);
-  }
+  
+  if (n->left != T->nil)
+    xf = rbt_plot(T,n->left,black_nodes,red_nodes,edges,xf,y - HEIGHT);
+  else xf += DELTA;
+
+  x = xf;
+  nodes = (n->color == BLACK ? black_nodes : red_nodes);
+  fprintf(nodes,"%f %f %d\n",x,y,n->key);
+
+  if (n->right != T->nil)
+    xf = rbt_plot(T,n->right,black_nodes,red_nodes,edges,xf,y - HEIGHT);
+  else xf += DELTA;
+
+  if (n->p != T->nil)
+    fprintf(edges,"%f %f %f %f\n",x,y,(n == n->p->left ? xf : xo) - x,HEIGHT);
+
+  return xf;
 }
