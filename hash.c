@@ -47,7 +47,7 @@ int fun_hash(int i){
 }
 
 int main(int argc,char **argv){
-  hash * ht = NULL;
+  hash *ht;
   ht = crea_hash_table((int (*)(int))fun_hash);
   return 0;
 }
@@ -75,14 +75,16 @@ int agrega_elemento(hash *ht,int clave,float valor){
     t->valor = valor;
   }
   else {
-    t = agrega_valor(&(ht->elementos)[aux],clave);
+    t = agrega_valor(&(ht->elementos)[aux],clave,valor);
     if(t != NULL){
       t->valor = valor;
     }
     else {
       printf("Clave %d repetida, no fue posible agregar valor %f\n",clave,valor);
+      return FALSE;
     }
   }
+  return TRUE;
 }
 
 float busca_elemento(hash *ht,int clave){

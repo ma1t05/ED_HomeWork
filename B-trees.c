@@ -132,7 +132,7 @@ void B_tree_insert_nonfull(B_node *x,int key){
   if (x->leaf) {
     printf("Es hoja en nodo de tamaño %d\n",x->n);
     while (i > 0 && key < x->key[i-1])
-      x->key[i] = x->key[--i]; // Precaucion!, validar orden de aplicacion
+      x->key[i] = x->key[--i]; /* Precaucion!, validar orden de aplicacion */
     printf("Se detiene en poscion %d\n",i);
     x->key[i] = key;
     x->n++;
@@ -179,24 +179,24 @@ void _B_tree_delete(B_node *x,int key){
   while (i > 0 && key < x->key[i])
     i--;
   if (key == x->key[i]){
-    if (x->leaf){ // Case 1
+    if (x->leaf){ /* Case 1 */
       for(;i < x->n;i++)
 	x->key[i-1] = x->key[i];
     }
-    else { // Case 2
+    else { /* Case 2 */
       y = x->c[i];
       z = x->c[i+1];
-      if (y->n >= B_TREE_T) { //2a
+      if (y->n >= B_TREE_T) { /* 2a */
 	k = B_tree_predecessor(y,key);
 	x->key[i] = k;
 	_B_tree_delete(y,k);
       }
-      else if (z->n >= B_TREE_T) { // 2b
+      else if (z->n >= B_TREE_T) { /* 2b */
 	k = B_tree_successor(z,key);
 	x->key[i] = k;
 	_B_tree_delete(z,k);
       }
-      else { // 2c
+      else { /* 2c */
 	i++;
 	x->n--;
 	for(;i < x->n;i++){
@@ -214,18 +214,18 @@ void _B_tree_delete(B_node *x,int key){
       }
     }
   }
-  else { // Case 3
+  else { /* Case 3 */
     y = (key < x->key[i] ? x->c[i] : x->c[++i]);
     if (y->n < B_TREE_T) {
       if (i < x->n && x->c[i+1]->n >= B_TREE_T) {
-	z = x->c[i+1]; // Hermano con mas de t claves
-	// Baja clave de x a y
+	z = x->c[i+1]; /* Hermano con mas de t claves */
+	/* Baja clave de x a y */
 	y->n++;
 	y->key[B_TREE_T - 1] = x->key[i];
 	y->c[B_TREE_T] = z->c[0];
-	// Sube clave de hermano a x
+	/* Sube clave de hermano a x */
 	x->key[i] = z->key[0];
-	// Suprimir clave 0 de hermano
+	/* Suprimir clave 0 de hermano */
 	z->c[0] = z->c[1];
 	for(j = 1;j < z->n;j++){
 	  z->key[j-1] = z->key[j];
@@ -234,8 +234,8 @@ void _B_tree_delete(B_node *x,int key){
 	z->n--;
       }
       else if (i > 0 && x->c[i-1]->n >= B_TREE_T) {
-	z = x->c[i-1]; // Hermano con mas de t claves
-	// Baja clave de x a y
+	z = x->c[i-1]; /* Hermano con mas de t claves */
+	/* Baja clave de x a y */
 	y->n++;
 	y->c[B_TREE_T] = y->c[B_TREE_T - 1];
 	for(j = y->n - 1;j > 0;j--){
@@ -244,11 +244,11 @@ void _B_tree_delete(B_node *x,int key){
 	}
 	y->key[0] = x->key[i];
 	y->c[0] = z->c[z->n];
-	// Sube clave de hermano a x
+	/* Sube clave de hermano a x */
 	x->key[i] = z->key[z->n-1];
-	// Suprime ultima clave a hermano
-	z->key[z->n-1] = 0; // No es necesario borrar valor
-	z->c[z->n] = NULL; // No es necesario apuntar nuevamente a null
+	/* Suprime ultima clave a hermano */
+	z->key[z->n-1] = 0; /* No es necesario borrar valor */
+	z->c[z->n] = NULL; /* No es necesario apuntar nuevamente a null */
 	z->n--;
       }
       else {
@@ -258,7 +258,7 @@ void _B_tree_delete(B_node *x,int key){
 	  z = y;
 	  y = x->c[i-1];
 	}
-	// Combinar z en y
+	/* Combinar z en y */
 	y->key[B_TREE_T - 1] = x->key[i];
 	y->c[B_TREE_T] = z->c[0];
 	for(j = 0;j < z->n;i++){
@@ -277,7 +277,7 @@ void _B_tree_delete(B_node *x,int key){
 
 void B_tree_delete(B_tree *T,int key){
   int i;
-  B_node *r,*s;
+  B_node *r;
   r = T->root;
   if (r->leaf) {
     _B_tree_delete(r,key);

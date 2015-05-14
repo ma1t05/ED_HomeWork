@@ -29,48 +29,47 @@ void imprime_arreglo(int*,int);
 void imprimeAlrevez(lista*);
 void agregarAlInicio(lista*,elem*);
 void agregarAlFinal(lista*,elem*);
-void agregaOrdenado(lista*,elem*);
+int agregaOrdenado(lista*,elem*);
 
 void free_list(lista*);
 
-int es_elemento(lista*,int);
-// 0 no es elemento, 1 si lo es
+int es_elemento(lista*,int); /* 0 no es elemento, 1 si lo es */
 int es_elemento_ord(lista*,int);
-// igual que es_elemento con lista ordenada
+/* igual que es_elemento con lista ordenada */
 int posicion_elemento(lista*,int);
-// -1 si no es elemento, 0 a n-1 indicando la posicion
+/* -1 si no es elemento, 0 a n-1 indicando la posicion */
 int posicion_elemento_ord(lista*,int);
-// como posicion_elemento ordenada
+/* como posicion_elemento ordenada */
 void inserta_despues_de_valor(lista*,int,elem*);
-// Inserta despues del primer valor encontrado
+/* Inserta despues del primer valor encontrado */
 void inserta_despues_de_elemento(lista*,elem*,elem*); 
-// Inserta despues de elemento, verifica pertenencia
+/* Inserta despues de elemento, verifica pertenencia */
 void _inserta_despues_de_elemento(lista*,elem*,elem*); 
-// Inserta despues de elemento
+/* Inserta despues de elemento */
 void inserta_antes_de_valor(lista*,int,elem*); 
-// Inserta antes del primer valor encontrado
+/* Inserta antes del primer valor encontrado */
 void inserta_antes_de_elemento(lista*,elem*,elem*);
-// Inserta antes del elemento, verifica pertenencia
+/* Inserta antes del elemento, verifica pertenencia */
 void _inserta_antes_de_elemento(lista*,elem*,elem*);
-// Inserta antes del elemento
+/* Inserta antes del elemento */
 elem* remueveInicio(lista*);
-// Regresa el primer elemento o null, despues de removerlo
+/* Regresa el primer elemento o null, despues de removerlo */
 elem* remueveFinal(lista*);
-// Regresa el ultimo elemento o null, despues de removerlo
+/* Regresa el ultimo elemento o null, despues de removerlo */
 void remueve_valor_de(lista*,int);
-// Remueve el primer valor encontrado
+/* Remueve el primer valor encontrado */
 void remueve_valores_de(lista*,int);
-// Remueve todos los valores encontrados
+/* Remueve todos los valores encontrados */
 void _remueve_elemento(lista*,elem*);
-// Remueve elemento de lista
+/* Remueve elemento de lista */
 void remueve_rango(lista*,int,int);
-//void remueve_elemento(lista*,elem*);
+/*void remueve_elemento(lista*,elem*); */
 lista* junta_listas(lista*,lista*);
-// une dos listas
+/* une dos listas */
 lista* _junta_listas(lista*,lista*);
-// une dos listas
+/* une dos listas */
 lista* junta_listas_ord(lista*,lista*);
-// une dos listas ordenadas, manteniendo el orden
+/* une dos listas ordenadas, manteniendo el orden */
 lista* crea_lista(int);
 int * crea_arreglo(int);
 
@@ -89,6 +88,7 @@ int main(int argc, char** argv){
   elem* e = NULL;
   elem* t = NULL;
   int v;
+  lista *ll;
 
   l = (lista*)malloc(sizeof(lista));
   l->inicio = NULL;
@@ -117,7 +117,7 @@ int main(int argc, char** argv){
   }
   imprimeAlrevez(lo);
 
-  // Prueba es elemento posicion sin ordenar y ordenado
+  /* Prueba es elemento posicion sin ordenar y ordenado */
   for(i = 0;i < 10;i++){
     v = rand()%MAX + 1;
     printf("El %d es elemento de la lista?\n",v);
@@ -129,7 +129,7 @@ int main(int argc, char** argv){
   }
   free_list(lo);
 
-  // Prueba insertar antes/despues de valor
+  /* Prueba insertar antes/despues de valor */
   for(i = 0;i < 10;i++){
     e = (elem*)malloc(sizeof(elem));
     e->valor = rand()%MAX + 1;
@@ -147,7 +147,7 @@ int main(int argc, char** argv){
     imprimeTodo(l);
   }
 
-  // Prueba remueve inicio/final
+  /* Prueba remueve inicio/final */
   for(i = 0;i < 10;i++){
     if(i%2)
       e = remueveInicio(l);
@@ -161,7 +161,7 @@ int main(int argc, char** argv){
     imprimeTodo(l);
   }
 
-  // Prueba remover elemento(s)
+  /* Prueba remover elemento(s) */
   for(i = 0;i < 10;i++){
     v = rand() % MAX;
 
@@ -188,7 +188,6 @@ int main(int argc, char** argv){
   free_list(l);
   printf("Termina Vaciar listas\n");
   */
-  lista *ll;
   l = crea_lista(10);
   imprimeTodo(l);
   lo = crea_lista(10);
@@ -204,7 +203,7 @@ int main(int argc, char** argv){
   free_list(lo);
   free_list(ll);
 
-  // Prueba incerción sort
+  /* Prueba incerción sort */
   printf("Prueba ordenamiento por incerción\n");
   l = crea_lista(10);
   imprimeTodo(l);
@@ -213,7 +212,7 @@ int main(int argc, char** argv){
   free_list(l);
   free_list(lo);
   
-  // Prueba quick sort
+  /* Prueba quick sort */
   printf("Prueba ordenamiento rapido\n");
   l = crea_lista(10);
   imprimeTodo(l);
@@ -221,7 +220,7 @@ int main(int argc, char** argv){
   imprimeTodo(l);
   free_list(l);
   
-  // Prueba merge sort
+  /* Prueba merge sort */
   printf("Prueba ordenamiento merge\n");
   l = crea_lista(10);
   imprimeTodo(l);
@@ -229,7 +228,7 @@ int main(int argc, char** argv){
   imprimeTodo(l);
   free_list(l);
   
-  // Prueba bubble sort
+  /* Prueba bubble sort */
   printf("Pureba ordenamiento burbuja\n");
   a = crea_arreglo(10);
   imprime_arreglo(a,10);
@@ -237,7 +236,7 @@ int main(int argc, char** argv){
   imprime_arreglo(a,10);
   free(a);
 
-  // Prueba seleccion sort
+  /* Prueba seleccion sort */
   printf("Prueba ordenamiento por seleccion\n");
   a = crea_arreglo(10);
   imprime_arreglo(a,10);
@@ -504,7 +503,6 @@ void remueve_valores_de(lista* l ,int i){
 }
 
 void _remueve_elemento(lista* l,elem* e){
-  elem* t;
   if(e->ant != NULL){
     e->ant->sig = e->sig;
   } else {
@@ -765,7 +763,7 @@ int quick_sort(lista* lst){
   lst_der->inicio = NULL;
   lst_der->final = NULL;
 
-  // Selecciona Pivote
+  /* Selecciona Pivote */
   piv = lst->inicio;
   _remueve_elemento(lst,piv);
 
@@ -866,16 +864,18 @@ int bubble_sort(int* a,int n){
 
 int seleccion_sort(int *a,int n){
   int i,j,k;
-  int t;
+  int t,count;
   for(i = 0;i< n;i++){
     k = i;
     for(j = i + 1;j < n;j++){
       if(a[j] < a[k]){
 	k = j;
       }
+      count++;
     }
     t = a[k];
     a[k] = a[i];
     a[i] = t;
   }
+  return count;
 }
