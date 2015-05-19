@@ -2,11 +2,8 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<time.h>
-#define MAX 10
-
-/*
-  Determinar la complejidad de mi algoritmo 
-*/
+#define MAX 100000
+#define REP 100
 
 struct elemento{
   int valor;
@@ -71,16 +68,19 @@ lista* _junta_listas(lista*,lista*);
 lista* junta_listas_ord(lista*,lista*);
 /* une dos listas ordenadas, manteniendo el orden */
 lista* crea_lista(int);
+lista* copia_lista(lista*);
 int * crea_arreglo(int);
+int* copia_arreglo(int,lista*);
 
 int maltos_sort(lista*);
-lista* incercion_sort(lista*);
+int incercion_sort(lista*);
 int quick_sort(lista*);
 int merge_sort(lista*);
 int bubble_sort(int*,int);
 int seleccion_sort(int*,int);
+int _junta_listas_ord(lista*,lista*,lista*);
 
-int main(int argc, char** argv){
+void test_1( ){
   int i;
   int *a = NULL;
   lista* l = NULL;
@@ -207,10 +207,9 @@ int main(int argc, char** argv){
   printf("Prueba ordenamiento por incerción\n");
   l = crea_lista(10);
   imprimeTodo(l);
-  lo = incercion_sort(l);
-  imprimeTodo(lo);
+  incercion_sort(l);
+  imprimeTodo(l);
   free_list(l);
-  free_list(lo);
   
   /* Prueba quick sort */
   printf("Prueba ordenamiento rapido\n");
@@ -244,9 +243,53 @@ int main(int argc, char** argv){
   imprime_arreglo(a,10);
   free(a);
 
-  return 0;
 }
 
+void test_2 () {
+  int i,n,*a;
+  int cont_incercion,cont_quick,cont_merge,cont_bubble,
+    cont_seleccion,cont_maltos;
+  lista *lst,*clst;
+
+  for (i = 10;i < 1000;i+=10) {
+    cont_incercion = 0,cont_quick = 0,cont_merge = 0,
+      cont_bubble = 0,cont_seleccion = 0,cont_maltos;
+    for (n = 0;n < REP;n++) {
+      lst = crea_lista(i);
+    
+      /* Incerción Sort */
+      clst = copia_lista(lst);
+      cont_incercion += incercion_sort(clst);
+      free_list(clst);
+
+      /* Quick Sort */
+      clst = copia_lista(lst);
+      cont_quick += quick_sort(clst);
+      free_list(clst);
+
+      /* Merge Sort */
+      clst = copia_lista(lst);
+      cont_merge += merge_sort(clst);
+      free_list(clst);
+
+      /* Bubble Sort */
+      a = copia_arreglo(i,lst);
+      cont_bubble += bubble_sort(a,i);
+      free(a);
+
+      /* Seleccion Sort */
+      a = copia_arreglo(i,lst);
+      cont_seleccion += seleccion_sort(a,i);
+      free(a);
+
+      /* Maltos Sort 
+      clst = copia_lista(lst);
+      cont_maltos += maltos_sort(clst);
+      free_list(clst); */
+    }
+    printf("%d %f %f %f %f %f\n",i,(double)cont_incercion/REP,(double)cont_quick/REP,(double)cont_merge/REP,(double)cont_bubble/REP,(double)cont_seleccion/REP);
+  }
+}
 
 void imprimeTodo(lista* cual){
   elem* actual = cual->inicio;
@@ -676,15 +719,15 @@ lista* junta_listas_ord(lista *lst_1,lista *lst_2){
   
 }
 
-lista* _junta_listas_ord(lista *lst_1,lista *lst_2){
-  lista* lst;
+int _junta_listas_ord(lista *lst_1,lista *lst_2,lista *lst){
+  int cont = 0;
   elem *e,*t,*s;
-  lst = (lista*)malloc(sizeof(lista));
   lst->inicio = NULL;
   lst->final = NULL;
   e = lst_1->inicio;
   t = lst_2->inicio;
   while(e != NULL && t != NULL){
+    cont++;
     if(e->valor < t->valor){
       s = e->sig;
       _remueve_elemento(lst_1,e);
@@ -698,18 +741,20 @@ lista* _junta_listas_ord(lista *lst_1,lista *lst_2){
     }
   }
   while(e != NULL){
+    cont++;
     s = e->sig;
     _remueve_elemento(lst_1,e);
     agregarAlFinal(lst,e);
     e = s;
   }
   while(t != NULL){
+    cont++;
     s = t->sig;
     _remueve_elemento(lst_2,t);
     agregarAlFinal(lst,t);
     t = s;
   }
-  return lst;
+  return cont;
 }
 
 lista* crea_lista(int size){
@@ -726,6 +771,22 @@ lista* crea_lista(int size){
   return l;
 }
 
+lista* copia_lista(lista* lst){
+  lista *l;
+  elem *e,*s;
+  l = (lista*)malloc(sizeof(lista));
+  l->inicio = NULL;
+  l->final = NULL;
+  e = lst->inicio;
+  while (e != NULL) {
+    s = (elem*)malloc(sizeof(elem));
+    s->valor = e->valor;
+    agregarAlFinal(l,s);
+    e = e->sig;
+  }
+  return l;
+}
+
 int* crea_arreglo(int size){
   int *a = NULL;
   a = (int*)malloc(sizeof(int)*size);
@@ -735,7 +796,20 @@ int* crea_arreglo(int size){
   return a;
 }
 
-lista* incercion_sort(lista* lst){
+int* copia_arreglo(int size,lista *lst) {
+  int i = 0,*a;
+  elem *e;
+  a = (int*)malloc(sizeof(int)*size);
+  e = lst->inicio;
+  while (e != NULL) {
+    a[i++] = e->valor;
+    e = e->sig;
+  }
+  return a;
+}
+
+int incercion_sort(lista* lst){
+  int cont = 0;
   lista* ll;
   elem *e,*s;
   ll = (lista*)malloc(sizeof(lista));
@@ -745,10 +819,16 @@ lista* incercion_sort(lista* lst){
   while(e != NULL){
     s = (elem*)malloc(sizeof(elem));
     s->valor = e->valor;
-    agregaOrdenado(ll,s);
+    cont += agregaOrdenado(ll,s);
     e = e->sig;
   }
-  return ll;
+  e = lst->inicio;
+  lst->inicio = ll->inicio;
+  ll->inicio = e;
+  e = lst->final;
+  lst->final = ll->final;
+  ll->final = e;
+  return cont;
 }
 
 int quick_sort(lista* lst){
@@ -803,7 +883,7 @@ int quick_sort(lista* lst){
 int merge_sort(lista *lst){
   lista *lst_izq,*lst_der,*lst_aux;
   elem *e,*s;
-  int altura_izq,altura_der,k;
+  int cont = 0,k;
   if(lst->inicio == lst->final) return 1;
   
   lst_izq = (lista*)malloc(sizeof(lista));
@@ -828,10 +908,11 @@ int merge_sort(lista *lst){
   lst->inicio = NULL;
   lst->final = NULL;
 
-  altura_izq = merge_sort(lst_izq);
-  altura_der = merge_sort(lst_der);
+  cont += merge_sort(lst_izq);
+  cont += merge_sort(lst_der);
   
-  lst_aux = _junta_listas_ord(lst_izq,lst_der);
+  lst_aux = (lista*)malloc(sizeof(lista));
+  cont += _junta_listas_ord(lst_izq,lst_der,lst_aux);
   free(lst_izq);
   free(lst_der);
 
@@ -842,15 +923,17 @@ int merge_sort(lista *lst){
   lst_aux->final = NULL;
   free(lst_aux);
   
-  return (altura_izq > altura_der ? altura_izq : altura_der) + 1;
+  return cont;
 }
 
 int bubble_sort(int* a,int n){
   int i,c;
   int t;
+  int cont = 0;
   do {
     c = 0;
     for(i = 1;i<n;i++){
+      cont++;
       if(a[i]<a[i-1]){
 	t = a[i];
 	a[i] = a[i-1];
@@ -859,7 +942,7 @@ int bubble_sort(int* a,int n){
       }
     }
   }while(c != 0);
-  return a[0];
+  return cont;
 }
 
 int seleccion_sort(int *a,int n){
@@ -878,4 +961,9 @@ int seleccion_sort(int *a,int n){
     a[i] = t;
   }
   return count;
+}
+
+int main () {
+  test_2();
+  return 0;
 }

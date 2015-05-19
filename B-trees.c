@@ -4,7 +4,7 @@
  * Clase: Estructura de Datos en C++
  * Implementacion de arboles B
  * Se implementa:
- *  search, create, insert
+ *  search, create, insert, delete
  */
 
 #include<stdlib.h>
@@ -299,21 +299,25 @@ void B_tree_delete(B_tree *T,int key){
   }
 }
 
-#define BLOCK_SIZE 5.0
+#define BLOCK_SIZE 50.0
 #define HEIGHT 10.0
 #define DELTA 3.0
 #define EPSILON 0.25
 
-float plot(B_node *x,FILE *nodes,FILE *edges,float xo,float y){
+float plot(B_node *x,FILE *nodes,FILE *edges,FILE* boxes,float xo,float y){
   int i;
   float xf,*z;
   if (x->leaf) {
     xo+=DELTA;
+    fprintf(boxes,"%f %f %f 0.0\n",xo,y-DELTA*0.25,BLOCK_SIZE * x->n);
+    fprintf(boxes,"%f %f %f 0.0\n",xo,y+DELTA*0.25,BLOCK_SIZE * x->n);
+    fprintf(boxes,"%f %f 0.0 %f\n",xo,y-DELTA*0.25,DELTA * 0.5);
+    xo+=BLOCK_SIZE*0.5;
     for(i = 0; i < x->n; i++) {
       fprintf(nodes,"%f %f %d\n",xo,y,x->key[i]);
       xo+= BLOCK_SIZE;
     }
-    xo-=BLOCK_SIZE;
+    fprintf(boxes,"%f %f 0.0 %f\n",xo-BLOCK_SIZE*0.5,y-DELTA*0.25,DELTA * 0.5);
     xo+=DELTA;
   }
   else {
@@ -321,16 +325,22 @@ float plot(B_node *x,FILE *nodes,FILE *edges,float xo,float y){
     xf = xo;
     for(i = 0;i <= x->n;i++){
       z[i] = xf;
-      xf = plot(x->c[i],nodes,edges,xf,y - HEIGHT);
+      xf = plot(x->c[i],nodes,edges,boxes,xf,y - HEIGHT);
     }
     z[i] = xf;
-    xo = (xo + xf) / 2;
-    xo-= BLOCK_SIZE * x->n / 2;
+    xo = (xo + xf) * 0.5;
+    xo-= BLOCK_SIZE * x->n * 0.5;
+    fprintf(boxes,"%f %f %f 0.0\n",xo,y-DELTA*0.25,BLOCK_SIZE * x->n);
+    fprintf(boxes,"%f %f %f 0.0\n",xo,y+DELTA*0.25,BLOCK_SIZE * x->n);
+    fprintf(boxes,"%f %f 0.0 %f\n",xo,y-DELTA*0.25,DELTA*0.5);
+    xo+= BLOCK_SIZE * 0.5;
     for(i = 0;i < x->n;i++){
       fprintf(nodes,"%f %f %d\n",xo,y,x->key[i]);
       xo+= BLOCK_SIZE;
     }
-    xo-= BLOCK_SIZE * (x->n + 0.5);
+    xo-= BLOCK_SIZE * 0.5;
+    fprintf(boxes,"%f %f 0.0 %f\n",xo,y-DELTA*0.25,DELTA * 0.5);
+    xo-= BLOCK_SIZE * x->n;
     for(i = 0;i <= x->n;i++){
       fprintf(edges,"%f %f %f %f\n",xo,y,(z[i]+z[i+1])/2-xo,-HEIGHT+EPSILON);
       xo+= BLOCK_SIZE;
@@ -342,13 +352,16 @@ float plot(B_node *x,FILE *nodes,FILE *edges,float xo,float y){
 }
 
 void gnuplot(B_tree *T){
-  FILE *nodes,*edges;
+  FILE *nodes,*edges,*boxes;
   FILE *gnuPipe = popen("gnuplot","w");
   nodes = fopen("B_nodes.dat","w");
   edges = fopen("B_edges.dat","w");
-  plot(T->root,nodes,edges,0.0,0.0);
+  boxes = fopen("B_boxes.dat","w");
+  printf("Imprimiendo\n");
+  plot(T->root,nodes,edges,boxes,0.0,0.0);
   fclose(nodes);
   fclose(edges);
+  fclose(boxes);
 
   fprintf(gnuPipe,"set term svg\n");
   fprintf(gnuPipe,"set output 'B_tree_%d.svg'\n",time(NULL));
@@ -361,6 +374,7 @@ void gnuplot(B_tree *T){
   fprintf(gnuPipe,"plot ");
   fprintf(gnuPipe,"'B_nodes.dat' using 1:2:3 with labels");
   fprintf(gnuPipe,", 'B_edges.dat' using 1:2:3:4 with vectors filled head linecolor rgb \"dark-blue\"");
+  fprintf(gnuPipe,", 'B_boxes.dat' using 1:2:3:4 with vectors nohead linecolor rgb \"red\"");
   fprintf(gnuPipe,"\n");
   pclose(gnuPipe);
 }

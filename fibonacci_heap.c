@@ -43,6 +43,8 @@ void fib_heap_decrease_key (fib_heap*,fib_node*,int);
 void fib_cut (fib_heap*,fib_node*,fib_node*);
 void fib_cascading_cut (fib_heap*,fib_node*);
 void fib_heap_delete(fib_heap*,fib_node*);
+void fib_heap_delete_heap (fib_heap*);
+void fib_heap_printf(fib_node*);
 void fib_heap_test ();
 
 fib_heap* make_fib_heap(){
@@ -73,9 +75,14 @@ void fib_heap_insert(fib_heap *H,int key){
   }
   else {
     // Inserta x en la lista de raices de H
+    x->right = H->min;
+    x->left = H->min->left;
+    x->left->right = x;
+    H->min->left = x;
     if (x->key < H->min->key)
       H->min = x;
     H->n++;
+    consolidate(H);
   }
 }
 
@@ -122,16 +129,17 @@ fib_node* fib_heap_extract_min(fib_heap *H){
 void consolidate (fib_heap *H){
   fib_node **A,*w,*x,*y;
   int i,D,d;
-  // Pendiente: calcular D
-  D = log(H->n);
+  // Pendiente: alcular D
+  D = log(H->n) + 1;
   A = (fib_node**)malloc(sizeof(fib_node*)*D);
   for (i = 0;i < D;i++) A[i] = NULL;
   w = H->min;
-  for (i = 0;i < D;i++) {
+  do {
     x = w;
     w = w->right;
     d = x->degree;
     while (A[d] != NULL) {
+      printf("Debug: posicion %d de %d\n",d,D);
       y = A[d];
       if (x->key > y->key) {
 	fib_heap_link(H,x,y);
@@ -144,7 +152,7 @@ void consolidate (fib_heap *H){
       d++;
     }
     A[d] = x;
-  }
+  } while (w != H->min);
   H->min = NULL;
   for (i = 0;i < D;i++) {
     if (A[i] != NULL) {
@@ -238,6 +246,75 @@ void fib_heap_delete (fib_heap *H, fib_node *x) {
   fib_heap_extract_min(H);
 }
 
+void fib_heap_delete_node(fib_node *x) {
+  fib_node *y;
+  if (x == NULL) return;
+  y = x->left;
+  while (y != x) {
+    printf("Borra hijos de: %d\n",y->key);
+    fib_heap_delete_node(y->child);
+    y->left->right = y->right;
+    y->right->left = y->left;
+    printf("Borra %d\n",y->key);
+    free(y);
+    y = x->left;
+  }
+  printf("Borra hijos de: %d\n",x->key);
+  fib_heap_delete_node(x->child);
+  printf("Borra %d\n",x->key);
+  free(x);
+}
+
+void fib_heap_delete_heap (fib_heap *H) {
+  fib_heap_delete_node(H->min);
+  free(H);
+}
+
+void fib_heap_printf(fib_node *x) {
+  fib_node *y;
+  if (x == NULL) return;
+  if (x->p == NULL) {
+    y = x;
+    printf("{");
+    do {
+      printf(" %d ",y->key);
+      y = y->left;
+    } while (y != x);
+    printf("}\n");
+  }
+  if (x->child != NULL) {
+    printf("%d:",x->key);
+    y = x->child;
+    do {
+      printf(" %d",y->key);
+      y = y->left;
+    } while (y != x->child);
+    printf("\n");
+    do {
+      fib_heap_printf(y);
+      y = y->left;
+    } while (y != x->child);
+  }
+  else
+    printf("%d\n",x->key);
+}
+
 void fib_heap_test () {
-  
+  int i,v;
+  fib_heap *H;
+  H = make_fib_heap();
+  for (i = 0;i < 10;i++) {
+    v = rand() % 1024;
+    printf("Inserta %d\n",v);
+    fib_heap_insert(H,v);
+    fib_heap_printf(H->min);
+  }
+  printf("El minimo es: %d\n",H->min->key);
+  fib_heap_printf(H->min);
+  fib_heap_delete_heap(H);
+}
+
+int main () {
+  fib_heap_test();
+  return 0;
 }

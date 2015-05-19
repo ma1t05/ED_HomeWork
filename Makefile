@@ -4,7 +4,7 @@ RM=rm -f
 
 CFLAGS=-Wall -pedantic -g
 OUT=./../obj
-OBJS:=$(patsubst %.c,$(OUT)/%.o,$(wildcard *.c))
+OBJS:=$(patsubst %.c,%.o,$(wildcard *.c))
 
 MAIN=main
 all:$(MAIN)

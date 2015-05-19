@@ -20,78 +20,27 @@ struct AVL_tree{
 };
 
 typedef struct AVL_tree avl;
-/*
-  Grafica para comparar una secuencia de operaciones 
-  con balanceo y sin balanceo
-  Contar cada llamada recursiva
-*/
-int busca_valor(avl**,int);
-int agrega_valor(avl**,int);
-int elimina_valor(avl**,int);
-void avl_free(avl**);
-int es_hoja(avl*);
-void cheka_balance(avl**);
 
-// Imprime arbol
+int avl_busca_valor(avl**,int);
+int avl_agrega_valor(avl**,int);
+int avl_elimina_valor(avl**,int);
+void avl_free(avl**);
 void avl_printf(avl**);
-void preorden(avl**);
-void inorder(avl**);
-void postorden(avl**);
-void gnuplot(avl**);
+void avl_preorden(avl**);
+void avl_inorder(avl**);
+void avl_postorden(avl**);
+void avl_gnuplot(avl**);
+
+int avl_es_hoja(avl*);
+void avl_cheka_balance(avl**);
+
 void avl_plot(avl**,FILE*,FILE*,int,int);
 
 avl* avl_crea_hoja(avl*);
-void actualiza_altura(avl*);
-int actualiza_profundidad(avl*);
-void actualiza_claves(avl*);
+void avl_actualiza_altura(avl*);
+int avl_actualiza_profundidad(avl*);
+void avl_actualiza_claves(avl*);
 void test_avl();
-
-int main(int argc, char **argv){
-  avl **arbol,**_arbol;
-  int k,i,valor;
-  int rep;
-  long int pasos,total_bal,total_unbal;
-  FILE *nodes = NULL,*edges = NULL;
-  srand(time(NULL));
-
-  arbol = (avl**)malloc(sizeof(avl*));
-  _arbol = (avl**)malloc(sizeof(avl*));
-
-
-  for(k = 100;k<MAX;k+=100){
-    total_bal = 0;
-    total_unbal = 0;
-    rep = NUM_REP;
-    while(rep-- > 0){
-      *arbol = NULL;
-      *_arbol = NULL;
-
-      // Agrega Valores
-      valor = 30;
-      for(i = 0;i < k; i++){
-	valor = rand()%100 + valor - 25;
-	agrega_valor(arbol,valor);
-	_agrega_valor(_arbol,valor);
-      }
-  
-      // Busca valores
-      for(i = 0;i < MAX;i++){
-	valor = i;
-	pasos = busca_valor(arbol,valor);
-	total_bal += (pasos > 0 ? pasos : -pasos);
-	pasos = busca_valor(_arbol,valor);
-	total_unbal += (pasos > 0 ? pasos : -pasos);
-      }
-    
-      avl_free(arbol);
-      avl_free(_arbol);
-    }
-    printf("%d %f %f\n",k,(float)total_bal/(float)NUM_REP,(float)total_unbal/(float)NUM_REP);
-  }
-  free(arbol);
-  free(_arbol);
-
-}
 
 void test_avl(){
   avl **arbol,**_arbol;
@@ -117,9 +66,9 @@ void test_avl(){
   total_unbal = 0;
   for(i = 0;i < MAX;i++){
     valor = i;
-    pasos = busca_valor(arbol,valor);
+    pasos = avl_busca_valor(arbol,valor);
     total_bal += (pasos > 0 ? pasos : -pasos);
-    pasos = busca_valor(_arbol,valor);
+    pasos = avl_busca_valor(_arbol,valor);
     total_unbal += (pasos > 0 ? pasos : -pasos);
   }
   printf("%d\t%d\n",total_bal,total_unbal);
@@ -140,7 +89,7 @@ void test_avl(){
   for(i = 0;i < 10;i++){
     valor = rand()%MAX;
     printf("Busca el %d\n",valor);
-    if(busca_valor(arbol,valor))
+    if(avl_busca_valor(arbol,valor))
       printf("Si esta\n");
     else
       printf("No esta\n");
@@ -149,16 +98,15 @@ void test_avl(){
   free(arbol);
 }
 
-int busca_valor(avl **avl_tree,int valor){
+int avl_busca_valor(avl **avl_tree,int clave){
   avl *tree;
   int encontro;
   if(avl_tree != NULL && *avl_tree != NULL){
     tree = *avl_tree;
-    if(!es_hoja(tree)){
-      //printf("[%d,%d]->",tree->valor,tree->profundidad);
-      encontro = (valor < tree->valor ?
-		  busca_valor(&(tree->izquierda),valor) :
-		  busca_valor(&(tree->derecha),valor));
+    if(!avl_es_hoja(tree)){
+      encontro = (clave < tree->clave ?
+		  avl_busca_valor(&(tree->izquierda),clave) :
+		  avl_busca_valor(&(tree->derecha),clave));
       if(encontro > 0){
 	encontro++;
       }
@@ -167,13 +115,13 @@ int busca_valor(avl **avl_tree,int valor){
       }
       return encontro;
     }
-    if(tree->valor == valor)
+    if(tree->clave == clave)
       return 1;
   }
   return -1;
 }
 
-int agrega_valor(avl **avl_tree,int valor){
+int avl_agrega_valor(avl **avl_tree,int valor){
   avl *tree;
   avl *hijo_izq,*hijo_der,*new_tree;
   int agrego;
